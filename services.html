@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GIS Services - NATMO</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="css/services.css" />
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="container header">
+    <!-- ==== NAVBAR ==== -->
+    <nav class="nav">
+      <div class="logo">
+        <h2>NATMO.</h2>
+      </div>
+
+      <div class="nav_menu" id="nav_menu">
+        <button class="close_btn" id="close_btn">
+          <i class="ri-close-fill"></i>
+        </button>
+
+        <ul class="nav_menu_list">
+          <li class="nav_menu_item">
+            <a href="login.html" class="nav_menu_link">Login</a>
+          </li>
+          <li class="nav_menu_item">
+            <a href="#" class="nav_menu_link">about</a>
+          </li>
+          <li class="nav_menu_item">
+            <a href="services.html" class="nav_menu_link">map services</a>
+          </li>
+          <li class="nav_menu_item">
+            <a href="#" class="nav_menu_link">contact</a>
+          </li>
+        </ul>
+      </div>
+
+      <button class="toggle_btn" id="toggle_btn">
+        <i class="ri-menu-line"></i>
+      </button>
+    </nav>
+
+  <!-- Map + Search Section -->
+  <section class="map_section">
+    <h2>GIS Layer Services</h2>
+    <div id="map"></div>
+    <input type="text" id="searchBox" placeholder="Search features like 'bank', 'road'..." />
+    <p id="searchResult"></p>
+  </section>
+
+  <footer>
+    &copy; 2025 NATMO | Department of Science & Technology, Government of India
+  </footer>
+
+  <!-- JS Includes -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Toggle Nav Logic
+    const toggleBtn = document.getElementById("toggle_btn");
+    const closeBtn = document.getElementById("close_btn");
+    const navMenu = document.getElementById("nav_menu");
+
+    toggleBtn.onclick = () => navMenu.classList.add("show");
+    closeBtn.onclick = () => navMenu.classList.remove("show");
+
+    // Leaflet Map Logic
+    const map = L.map('map').setView([21.1466, 79.0888], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const buildingsLayer = L.layerGroup([
+      L.marker([21.1458, 79.0882]).bindPopup("Building A"),
+      L.marker([21.1600, 79.1000]).bindPopup("Building B")
+    ]);
+    const banksLayer = L.layerGroup([
+      L.marker([19.0760, 72.8777]).bindPopup("Bank of India"),
+      L.marker([18.5204, 73.8567]).bindPopup("State Bank")
+    ]);
+    const roadsLayer = L.layerGroup([
+      L.polyline([[21.1466, 79.0888], [21.1566, 79.0988]], {color: 'blue'}).bindPopup("Main Road"),
+      L.polyline([[21.1466, 79.0888], [21.1366, 79.0788]], {color: 'gray'}).bindPopup("Service Road")
+    ]);
+
+    const overlays = {
+      "Buildings": buildingsLayer,
+      "Banks": banksLayer,
+      "Road Networks": roadsLayer,
+      "Road Networks": roadsLayer
+    };
+    L.control.layers(null, overlays).addTo(map);
+
+    const allFeatures = {
+      "building a": buildingsLayer.getLayers()[0],
+      "building b": buildingsLayer.getLayers()[1],
+      "bank of india": banksLayer.getLayers()[0],
+      "state bank": banksLayer.getLayers()[1],
+      "main road": roadsLayer.getLayers()[0],
+      "service road": roadsLayer.getLayers()[1]
+    };
+
+    function searchFeatures() {
+      const query = document.getElementById("searchBox").value.toLowerCase();
+      const result = document.getElementById("searchResult");
+
+      if (allFeatures[query]) {
+        const layer = allFeatures[query];
+        map.setView(layer.getLatLng ? layer.getLatLng() : layer.getBounds().getCenter(), 14);
+        layer.openPopup && layer.openPopup();
+        result.innerHTML = `🔍 Found: <strong>${query}</strong>`;
+      } else {
+        result.innerHTML = "No matching feature found.";
+      }
+    }
+
+    document.getElementById("searchBox").addEventListener("input", searchFeatures);
+  </script>
+</body>
+</html>
